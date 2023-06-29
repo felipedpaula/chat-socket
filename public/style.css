@@ -81,3 +81,7 @@ ul, li {
     outline: 0;
     border: 0;
 }
+
+.me {
+    color: #FF0000;
+}

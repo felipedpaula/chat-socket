@@ -1,3 +1,5 @@
+const socket = io();
+
 // Variáveis para armazenar o nome de usuário e a lista de usuários
 let username = '';
 let userList = [];
@@ -73,10 +75,17 @@ function addMessage(type, user, msg) {
             ul.innerHTML += '<li class="m-status">' + msg + '</li>';
             break;
         case 'msg':
-            // Adicionando uma mensagem de usuário à lista de mensagens no chat
-            ul.innerHTML += '<li class="m-txt"><span>' + user + '</span> ' + msg + '</li>';
-            break;
+            if(username == user) {
+                ul.innerHTML += '<li class="m-txt"><span class="me">' + user + '</span> ' + msg + '</li>';
+            } else {
+                // Adicionando uma mensagem de usuário à lista de mensagens no chat
+                ul.innerHTML += '<li class="m-txt"><span>' + user + '</span> ' + msg + '</li>';
+                break;
+            }
+
     }
+
+    ul.scrollTop = ul.scrollHeight;
 }
 
 
@@ -117,3 +126,21 @@ socket.on('show-msg', (data) => {
     // Adicionando a mensagem à lista de mensagens no chat
     addMessage('msg', data.username, data.message);
 });
+
+socket.on('disconnect', () => {
+    addMessage('status', null, 'Você foi desconectado.');
+    userList = [];
+    renderUserList();
+});
+
+socket.on('reconnect_error', () => {
+    addMessage('status', null, 'Tentando reconectar');
+})
+
+socket.one('reconnect', () => {
+    addMessage('status', null, 'Reconectado!');
+
+    if(username != '') {
+        socket.emit('join-request', username)
+    }
+})
